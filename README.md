@@ -28,3 +28,44 @@ See [the package record](PACKAGES.md) for exact package IDs and failed attempts.
 - [Android Platform Tools](https://developer.android.com/tools/releases/platform-tools)
 - [Homestead releases and setup](https://github.com/Sarg338/Homestead)
 - [Independent report for the same model and build](https://dumbtv.org/tv/fire-tv#aftna1322d)
+
+## Windows quick start
+
+Download Android Platform Tools and extract it. In PowerShell, open this repository folder. On the TV, go to Settings > Device & Software > About, highlight the device name and press Select seven times if Developer Options is hidden. Enable ADB Debugging, then find the TV's IPv4 address under About > Network.
+
+```powershell
+$adb = 'C:\path\to\platform-tools\adb.exe'
+$tv = '192.168.1.50:5555' # Replace with your TV address.
+& $adb connect $tv
+& $adb devices -l
+.\FireTvDebloat.ps1 -Adb $adb -Target $tv -Action Audit
+```
+
+Accept the authorization prompt on the TV and confirm its status is **device**. Audit is read-only and rejects other models and builds. It reports Android's package state values (0 = default, 1 = explicitly enabled, 3 = disabled for the user). The rollback JSON contains your local TV address. Keep it private.
+
+Apply a single group, starting with Apps. A new state file is required for every batch. If a command or core service check fails, the tool attempts to restore each touched package and reports any rollback failures.
+
+```powershell
+New-Item -ItemType Directory -Force .\local-state | Out-Null
+.\FireTvDebloat.ps1 -Adb $adb -Target $tv -Action Apply -Group Apps -StateFile .\local-state\apps.json -Approve
+```
+
+The other groups are Telemetry, Demos, and Alexa. Run them separately with distinct state filenames. Verify Netflix and Prime Video playback, HDMI, picture, audio, and the remote between groups. Reboot using the TV menu, reconnect, and rerun Audit to verify persistence. If a batch fails your hands-on check, restore it using its saved file.
+
+```powershell
+.\FireTvDebloat.ps1 -Adb $adb -Target $tv -Action Restore -StateFile .\local-state\apps.json -Approve
+& $adb disconnect $tv
+```
+
+### Homestead and animation settings
+
+Launcher setup is manual. Install the official release APK with `& $adb -s $tv install .\homestead.apk` and open Homestead from the apps row. Record both secure settings first.
+
+```powershell
+& $adb -s $tv shell settings --user 0 get secure enabled_accessibility_services
+& $adb -s $tv shell settings --user 0 get secure accessibility_enabled
+```
+
+Use Homestead's documented computer setup. For this TV, the working configuration used HomeRedirectService and READ_LOGS. If you have other accessibility services, append Homestead to the existing colon-separated list. Test Home from both streaming apps. To roll back, restore the exact prior accessibility values (use settings delete for previously missing keys) and uninstall com.homestead.launcher. Use the on-device ADB option only if you want Homestead to reapply selected debloat changes after reboot.
+
+The three global animation keys are window_animation_scale, transition_animation_scale, and animator_duration_scale. Record each with settings get global KEY, then use settings put global KEY 0.5 to shorten transitions. Restore exact original values with settings put, or settings delete for missing keys.

@@ -5,3 +5,4 @@ adbkey*
 baseline-*/
 work/
 .env
+local-state/
