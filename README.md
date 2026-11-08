@@ -1,6 +1,6 @@
 # Fire TV 4-Series debloat
 
-A supervised Windows ADB case study for Amazon 4K50N402 (AFTNA1322D, shinagawa), Fire OS 8.1.8.5, build RS8185.3898N. Treat other firmware as unverified.
+A supervised Windows ADB case for Amazon 4K50N402 (AFTNA1322D, shinagawa), Fire OS 8.1.8.5, build RS8185.3898N. Treat other firmware as unverified.
 
 ## What worked
 
