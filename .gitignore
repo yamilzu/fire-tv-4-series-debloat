@@ -1,0 +1,7 @@
+*.apk
+*.zip
+*.log
+adbkey*
+baseline-*/
+work/
+.env
